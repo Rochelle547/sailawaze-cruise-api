@@ -5,7 +5,6 @@ const openai = new OpenAI({
 });
 
 module.exports = async (req, res) => {
-  // CORS headers
   res.setHeader("Access-Control-Allow-Origin", "https://sailawaze.wpcomstaging.com");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -23,6 +22,8 @@ module.exports = async (req, res) => {
   try {
     const { messages } = req.body;
 
+    console.log("Received messages:", messages); // ✅ ADD THIS LINE
+
     const chat = await openai.chat.completions.create({
       model: "gpt-4",
       messages,
@@ -31,7 +32,7 @@ module.exports = async (req, res) => {
 
     res.status(200).json({ reply: chat.choices[0].message.content });
   } catch (error) {
-    console.error("GPT error:", error.message);
+    console.error("GPT error:", error); // ✅ FULL LOG
     res.status(500).json({ error: "Failed to get GPT response." });
   }
 };
