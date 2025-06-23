@@ -1,30 +1,36 @@
-export default async function handler(req, res) {
+const { OpenAI } = require("openai");
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+module.exports = async (req, res) => {
+  res.setHeader("Access-Control-Allow-Origin", "https://sailawaze.wpcomstaging.com");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+  if (req.method === "OPTIONS") {
+    res.status(200).end(); // Preflight OK
+    return;
+  }
+
   if (req.method !== "POST") {
     res.status(405).json({ error: "Method not allowed" });
     return;
   }
 
   try {
-    const body = req.body;
-    const prompt = `Suggest 3 cruises for: ${JSON.stringify(body)}`;
+    const { messages } = req.body;
 
-    const apiKey = process.env.OPENAI_API_KEY;
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-4",
-        messages: [{ role: "user", content: prompt }],
-        temperature: 0.7,
-      }),
+    const chat = await openai.chat.completions.create({
+      model: "gpt-4",
+      messages,
+      temperature: 0.7,
     });
 
-    const data = await response.json();
-    res.status(200).json({ reply: data.choices[0].message.content });
+    res.status(200).json({ reply: chat.choices[0].message.content });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("GPT error:", error.message);
+    res.status(500).json({ error: "Failed to get GPT response." });
   }
-}
+};
