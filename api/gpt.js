@@ -2,6 +2,9 @@
 
 import OpenAI from "openai";
 
+// Confirm API key is loading
+console.log("API Key:", process.env.OPENAI_API_KEY ? "Loaded" : "Missing");
+
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
@@ -24,6 +27,9 @@ export default async function handler(req, res) {
   }
 
   try {
+    // Log incoming request body
+    console.log("Incoming request body:", req.body);
+
     const { messages } = req.body;
 
     const chat = await openai.chat.completions.create({
@@ -34,7 +40,8 @@ export default async function handler(req, res) {
 
     res.status(200).json({ reply: chat.choices[0].message.content });
   } catch (error) {
-    console.error("GPT error:", error.message);
+    // Log full error for better debugging
+    console.error("GPT error:", error);
     res.status(500).json({ error: "Failed to get GPT response." });
   }
 }
